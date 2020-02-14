@@ -51,13 +51,12 @@ func reverseSlice(slice *[]string) {
 	}
 }
 
-func sortStrings(stringSlice *[]string, flags map[byte]bool) {
-	// no flags
-	if len(flags) == 0 {
-		sort.Strings(*stringSlice)
-	}
-	// numbers
+func sortStrings(stringSlice *[]string, flags map[byte]bool, kFlagVal int) {
+	//if flags[byte('k')] {
+	//
+	//}
 	if flags[byte('n')] {
+		// sort as numbers
 		fmt.Println("n")
 		numberSlice := make([]int, len(*stringSlice))
 		for idx := range *stringSlice {
@@ -67,20 +66,23 @@ func sortStrings(stringSlice *[]string, flags map[byte]bool) {
 		for idx := range *stringSlice {
 			(*stringSlice)[idx] = strconv.Itoa(numberSlice[idx])
 		}
+	} else {
+		// sort as strings
+		sort.Strings(*stringSlice)
 	}
+	/*	if flags[byte('f')] {
+			fmt.Println("f")
+		}
+		if flags[byte('o')] {
+			fmt.Println("o")
+		}
+		if flags[byte('k')] {
+			fmt.Println("k")
+		}*/
 	// unique
 	if flags[byte('u')] {
 		fmt.Println("u")
 		*stringSlice = removeDuplicates(*stringSlice)
-	}
-	if flags[byte('f')] {
-		fmt.Println("f")
-	}
-	if flags[byte('o')] {
-		fmt.Println("o")
-	}
-	if flags[byte('k')] {
-		fmt.Println("k")
 	}
 	// reverse
 	if flags[byte('r')] {
@@ -90,17 +92,18 @@ func sortStrings(stringSlice *[]string, flags map[byte]bool) {
 }
 
 func main() {
-	//filename := "test_data/in1.txt"
-	filename := "test_data/in2.txt"
+	// filename := "test_data/in1.txt"
+	// filename := "test_data/in2.txt"
+	filename := "test_data/in3.txt"
 	stringsFromFile := readStringsFromFile(filename)
 	if len(stringsFromFile) == 0 {
 		return
 	}
 
 	flags := make(map[byte]bool, 6)
-	//flags[byte('r')] = false
-	//flags[byte('n')] = false
-	//flags[byte('u')] = false
+	// flags[byte('u')] = true
+	// flags[byte('n')] = true
+	// flags[byte('r')] = true
 	sortStrings(&stringsFromFile, flags)
 
 	for idx := range stringsFromFile {
