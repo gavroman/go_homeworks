@@ -17,6 +17,7 @@ func equal(l, r *[]string) bool {
 }
 
 func TestOK1(t *testing.T) {
+    var flags Flags
     stringsToSort := []string{
         "ddddddddddddddd",
         "aaaaaaaaaaaaa",
@@ -26,16 +27,12 @@ func TestOK1(t *testing.T) {
         "bbbbbbbbbbbbbb",
         "aaaaaaaaaaaaa",
     }
-    fFlag := false
-    uFlag := false
-    rFlag := false
-    nFlag := false
-    sortFlags := map[byte]*bool{
-        'f': &fFlag,
-        'u': &uFlag,
-        'r': &rFlag,
-        'n': &nFlag,
-    }
+    flags.F = false
+    flags.U = false
+    flags.R = false
+    flags.N = false
+    flags.K = -1
+
     sortedStrings := []string{
         "aaaaaaaaaaaaa",
         "aaaaaaaaaaaaa",
@@ -45,66 +42,80 @@ func TestOK1(t *testing.T) {
         "ccccccccccccc",
         "ddddddddddddddd",
     }
-    column := -1
 
-    sortStrings(&stringsToSort, sortFlags, column)
+    err := sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 0 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 0 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = true
-    rFlag = false
-    nFlag = false
+    flags.F = false
+    flags.U = true
+    flags.R = false
+    flags.N = false
     sortedStrings = []string{
         "aaaaaaaaaaaaa",
         "bbbbbbbbbbbbbb",
         "ccccccccccccc",
         "ddddddddddddddd",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 1 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 1 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = true
-    rFlag = true
-    nFlag = false
+    flags.F = false
+    flags.U = true
+    flags.R = true
+    flags.N = false
     sortedStrings = []string{
         "ddddddddddddddd",
         "ccccccccccccc",
         "bbbbbbbbbbbbbb",
         "aaaaaaaaaaaaa",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 2 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 2 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = true
-    rFlag = true
-    nFlag = false
+    flags.F = false
+    flags.U = true
+    flags.R = true
+    flags.N = false
     sortedStrings = []string{
         "ddddddddddddddd",
         "ccccccccccccc",
         "bbbbbbbbbbbbbb",
         "aaaaaaaaaaaaa",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 3 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 3 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = true
-    rFlag = false
-    nFlag = true
+    flags.F = false
+    flags.U = true
+    flags.R = false
+    flags.N = true
     sortedStrings = []string{
         "ddddddddddddddd",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 4 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 4 failed: wrong sort")
     }
@@ -121,17 +132,12 @@ func TestOK2(t *testing.T) {
         "65432",
         "355",
     }
-    fFlag := false
-    uFlag := false
-    rFlag := false
-    nFlag := false
-    sortFlags := map[byte]*bool{
-        'f': &fFlag,
-        'u': &uFlag,
-        'r': &rFlag,
-        'n': &nFlag,
-    }
-    column := -1
+    var flags Flags
+    flags.F = false
+    flags.U = false
+    flags.R = false
+    flags.N = false
+    flags.K = -1
 
     sortedStrings := []string{
         "123213",
@@ -143,15 +149,18 @@ func TestOK2(t *testing.T) {
         "5453",
         "65432",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err := sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 0 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 0 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = false
-    rFlag = true
-    nFlag = true
+    flags.F = false
+    flags.U = false
+    flags.R = true
+    flags.N = true
     sortedStrings = []string{
         "123213",
         "123213",
@@ -163,15 +172,18 @@ func TestOK2(t *testing.T) {
         "355",
     }
 
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 1 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 1 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = true
-    rFlag = false
-    nFlag = false
+    flags.F = false
+    flags.U = true
+    flags.R = false
+    flags.N = false
     sortedStrings = []string{
         "123213",
         "34324",
@@ -179,15 +191,18 @@ func TestOK2(t *testing.T) {
         "5453",
         "65432",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 2 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 2 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = true
-    rFlag = false
-    nFlag = true
+    flags.F = false
+    flags.U = true
+    flags.R = false
+    flags.N = true
     sortedStrings = []string{
         "355",
         "5453",
@@ -195,15 +210,18 @@ func TestOK2(t *testing.T) {
         "65432",
         "123213",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 3 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 3 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = true
-    rFlag = true
-    nFlag = true
+    flags.F = false
+    flags.U = true
+    flags.R = true
+    flags.N = true
     sortedStrings = []string{
         "123213",
         "65432",
@@ -211,13 +229,17 @@ func TestOK2(t *testing.T) {
         "5453",
         "355",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 4 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 4 failed: wrong sort")
     }
 }
 
 func TestOK3(t *testing.T) {
+    var flags Flags
     stringsToSort := []string{
         "Copyr ighta 2009 TheG Auth",
         "useoa lrigh tsrt aaaa bbbb",
@@ -226,16 +248,11 @@ func TestOK3(t *testing.T) {
         "licen setha atca eeee ound",
         "inteL ICENS Efit sfdg frgh",
     }
-    fFlag := false
-    uFlag := false
-    rFlag := false
-    nFlag := false
-    sortFlags := map[byte]*bool{
-        'f': &fFlag,
-        'u': &uFlag,
-        'r': &rFlag,
-        'n': &nFlag,
-    }
+    flags.F = false
+    flags.U = false
+    flags.R = false
+    flags.N = false
+    flags.K = -1
     sortedStrings := []string{
         "Copyr ighta 2009 TheG Auth",
         "govrn edbya 323  shid cccc",
@@ -244,17 +261,19 @@ func TestOK3(t *testing.T) {
         "uSeOa thisa sour aAaa aaaa",
         "useoa lrigh tsrt aaaa bbbb",
     }
-    column := -1
 
-    sortStrings(&stringsToSort, sortFlags, column)
+    err := sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 0 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 0 failed: wrong sort")
     }
 
-    fFlag = true
-    uFlag = false
-    rFlag = false
-    nFlag = false
+    flags.F = true
+    flags.U = false
+    flags.R = false
+    flags.N = false
     sortedStrings = []string{
         "Copyr ighta 2009 TheG Auth",
         "govrn edbya 323  shid cccc",
@@ -263,16 +282,19 @@ func TestOK3(t *testing.T) {
         "useoa lrigh tsrt aaaa bbbb",
         "uSeOa thisa sour aAaa aaaa",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 1 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 1 failed: wrong sort")
     }
 
-    fFlag = false
-    uFlag = false
-    rFlag = false
-    nFlag = false
-    column = 2
+    flags.F = false
+    flags.U = false
+    flags.R = false
+    flags.N = false
+    flags.K = 2
     sortedStrings = []string{
         "Copyr ighta 2009 TheG Auth",
         "govrn edbya 323  shid cccc",
@@ -281,16 +303,19 @@ func TestOK3(t *testing.T) {
         "uSeOa thisa sour aAaa aaaa",
         "useoa lrigh tsrt aaaa bbbb",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 2 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 2 failed: wrong sort")
     }
 
-    fFlag = true
-    uFlag = false
-    rFlag = false
-    nFlag = false
-    column = 2
+    flags.F = true
+    flags.U = false
+    flags.R = false
+    flags.N = false
+    flags.K = 2
     sortedStrings = []string{
         "Copyr ighta 2009 TheG Auth",
         "govrn edbya 323  shid cccc",
@@ -299,16 +324,19 @@ func TestOK3(t *testing.T) {
         "uSeOa thisa sour aAaa aaaa",
         "useoa lrigh tsrt aaaa bbbb",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 3 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 3 failed: wrong sort")
     }
 
-    fFlag = true
-    uFlag = true
-    rFlag = false
-    nFlag = false
-    column = 3
+    flags.F = true
+    flags.U = true
+    flags.R = false
+    flags.N = false
+    flags.K = 3
     stringsToSort = []string{
         "Copyr ighta 2009 TheG Auth",
         "useoa lrigh tsrt aaaa bbbb",
@@ -324,7 +352,10 @@ func TestOK3(t *testing.T) {
         "govrn edbya 323  shid cccc",
         "Copyr ighta 2009 TheG Auth",
     }
-    sortStrings(&stringsToSort, sortFlags, column)
+    err = sortStrings(&stringsToSort, flags)
+    if err != nil {
+        t.Errorf("Test 4 failed: %s", err)
+    }
     if !equal(&sortedStrings, &stringsToSort) {
         t.Errorf("Test 4 failed: wrong sort")
     }

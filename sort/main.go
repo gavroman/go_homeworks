@@ -2,8 +2,10 @@ package main
 
 import (
     "bufio"
+    "errors"
     "flag"
-    "fmt"
+    "io"
+    "log"
     "os"
     "sort"
     conv "strconv"
@@ -12,70 +14,51 @@ import (
 
 func readStringsFromFile(filename string) []string {
     file, err := os.Open(filename)
+    defer file.Close()
     if err != nil {
-        fmt.Println(err)
         return []string{}
     }
 
-    reader := bufio.NewReader(file)
+    scanner := bufio.NewScanner(file)
 
     var str string
-    result := make([]string, 0, 8)
-    for err == nil {
-        str, err = reader.ReadString('\n')
-        str = strs.TrimRight(str, "\n")
+    var result []string
+    for scanner.Scan() {
+        str = scanner.Text()
         result = append(result, str)
-    }
-
-    if result[len(result)-1] == "" {
-        result = result[:len(result)-1]
     }
 
     return result
 }
 
-func writeStringsToFile(stringsToWrite *[]string, filename string) error {
+func writeStrings(stringsToWrite *[]string, file *os.File) error {
     if stringsToWrite == nil {
-        return nil
+        return errors.New("no strings to write")
     }
 
-    outputFile, err := os.Create(filename)
-    if err != nil {
-        return err
-    }
-    defer outputFile.Close()
-    writer := bufio.NewWriter(outputFile)
+    writer := io.Writer(file)
     for i := range *stringsToWrite {
-        (*stringsToWrite)[i] += "\n"
-        _, err := writer.WriteString((*stringsToWrite)[i])
+        _, err := writer.Write([]byte((*stringsToWrite)[i] + "\n"))
         if err != nil {
             return err
         }
     }
-    writer.Flush()
     return nil
 }
 
-func removeDuplicates(slice []string, equal func(l, r string) bool) []string {
+func removeDuplicates(slice []string, equal func(l, r int) bool) []string {
     n := len(slice)
     if n <= 1 {
         return slice
     }
     j := 1
     for i := 1; i != n; i++ {
-        if !equal(slice[i], slice[i-1]) {
+        if !equal(i, i-1) {
             slice[j] = slice[i]
             j++
         }
     }
     return slice[:j]
-}
-
-func reverseSlice(slice *[]string) {
-    for i := len(*slice)/2 - 1; i != -1; i-- {
-        j := len(*slice) - 1 - i
-        (*slice)[i], (*slice)[j] = (*slice)[j], (*slice)[i]
-    }
 }
 
 func getWordFromString(s *string, position int) string {
@@ -87,75 +70,104 @@ func getWordFromString(s *string, position int) string {
     return result
 }
 
-func sortStrings(stringSlice *[]string, flags map[byte]*bool, kFlagVal int) {
-    less := func(i, j int) bool {
+func sortStrings(stringSlice *[]string, flags Flags) error {
+    if stringSlice == nil {
+        return errors.New("no data to sort")
+    }
+
+    processFlags := func(sign byte, i, j int) bool {
         lString, rString := (*stringSlice)[i], (*stringSlice)[j]
-        if kFlagVal != -1 {
-            lString = getWordFromString(&lString, kFlagVal)
-            rString = getWordFromString(&rString, kFlagVal)
+        if flags.K != -1 {
+            lString = getWordFromString(&lString, flags.K)
+            rString = getWordFromString(&rString, flags.K)
         }
-        if *flags['n'] {
+        if flags.N {
             lNumber, _ := conv.Atoi(lString)
             rNumber, _ := conv.Atoi(rString)
-            return lNumber < rNumber
-        }
-        if *flags['f'] {
-            lString, rString = strs.ToLower(lString), strs.ToLower(rString)
-        }
-        return lString < rString
-    }
-    sort.Slice(*stringSlice, less)
-
-    if *flags['u'] {
-        equal := func(l, r string) bool {
-            if kFlagVal != -1 {
-                l = getWordFromString(&l, kFlagVal)
-                r = getWordFromString(&r, kFlagVal)
-            }
-            if *flags['n'] {
-                lNumber, _ := conv.Atoi(l)
-                rNumber, _ := conv.Atoi(r)
+            if sign == '<' {
+                return lNumber < rNumber
+            } else {
                 return lNumber == rNumber
             }
-            if *flags['f'] {
-                l, r = strs.ToLower(l), strs.ToLower(r)
-            }
-            return l == r
+        }
+        if flags.F {
+            lString, rString = strs.ToLower(lString), strs.ToLower(rString)
+        }
+        if sign == '<' {
+            return lString < rString
+        } else {
+            return lString == rString
+        }
+    }
+
+    sort.Slice(*stringSlice, func(i, j int) bool {
+        result := processFlags('<', i, j)
+        if flags.R {
+            return !result
+        }
+        return result
+    })
+
+    if flags.U {
+        equal := func(i, j int) bool {
+            return processFlags('=', i, j)
         }
         *stringSlice = removeDuplicates(*stringSlice, equal)
     }
-    if *flags['r'] {
-        reverseSlice(stringSlice)
-    }
+
+    return nil
+}
+
+type Flags struct {
+    F bool
+    U bool
+    R bool
+    O string
+    N bool
+    K int
+}
+
+func parseFlags() Flags {
+    var flags Flags
+    flag.BoolVar(&flags.F, "f", false, "Case insensitive")
+    flag.BoolVar(&flags.U, "u", false, "Remove duplicates")
+    flag.BoolVar(&flags.R, "r", false, "Reverse result")
+    flag.BoolVar(&flags.N, "n", false, "Sort as numbers")
+    flag.StringVar(&flags.O, "o", "", "Output filename")
+    flag.IntVar(&flags.K, "k", -1, "Sort by column")
+    flag.Parse()
+    return flags
 }
 
 func main() {
-	sortFlags := map[byte]*bool{
-		'f': flag.Bool("f", false, "Case insensitive"),
-		'u': flag.Bool("u", false, "Remove duplicates"),
-		'r': flag.Bool("r", false, "Reverse result"),
-		'n': flag.Bool("n", false, "Sort as numbers"),
-	}
-	outputFilename := flag.String("o", "", "Output filename")
-	kFlagValue := flag.Int("k", -1, "Sort by column")
-	flag.Parse()
-	inputFilename := flag.Arg(0)
+    flags := parseFlags()
+    inputFilename := flag.Arg(0)
 
-	stringsFromFile := readStringsFromFile(inputFilename)
-	if len(stringsFromFile) == 0 {
-		return
-	}
+    stringsFromFile := readStringsFromFile(inputFilename)
+    if len(stringsFromFile) == 0 {
+        log.Fatal("no strings read")
+        return
+    }
 
-	sortStrings(&stringsFromFile, sortFlags, *kFlagValue)
+    err := sortStrings(&stringsFromFile, flags)
+    if err != nil {
+        log.Fatal(err)
+        return
+    }
 
-	if outputFilename != nil && *outputFilename != "" {
-		err := writeStringsToFile(&stringsFromFile, *outputFilename)
-		if err != nil {
-			return
-		}
-	} else {
-		for idx := range stringsFromFile {
-			fmt.Println(stringsFromFile[idx])
-		}
-	}
+    if flags.O != "" {
+        outputFile, err := os.Create(flags.O)
+        defer outputFile.Close()
+        if err != nil {
+            log.Fatal(err)
+            return
+        }
+        err = writeStrings(&stringsFromFile, outputFile)
+        if err != nil {
+            log.Fatal(err)
+            return
+        }
+    } else {
+        err = writeStrings(&stringsFromFile, os.Stdin)
+    }
 }

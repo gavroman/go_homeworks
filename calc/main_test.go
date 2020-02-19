@@ -1,8 +1,8 @@
 package main
 
 import (
-    "math"
-    "testing"
+	"math"
+	"testing"
 )
 
 func TestOK(t *testing.T) {
@@ -23,11 +23,7 @@ func TestOK(t *testing.T) {
     }
 
     for i := range inputData {
-        out, err := reversePolishNotation(inputData[i])
-        if err != nil {
-            t.Errorf("Test case %d failed: %s", i, err)
-        }
-        result, err := calcFromPolishNotation(out)
+        result, err := calc(inputData[i])
         if err != nil {
             t.Errorf("Test case %d failed: %s", i, err)
         }
@@ -37,8 +33,29 @@ func TestOK(t *testing.T) {
     }
 }
 
-func TestFailCase1(t *testing.T) {
-    _, err := reversePolishNotation("1+2-34*&")
+func TestValidateBrackets(t *testing.T) {
+    expr := "(*(*)&*)&)*&&)(*()*&)*)(*)"
+    if validateBrackets(expr) {
+    	t.Errorf("Test failed, expected false: %s", expr)
+	}
+    expr = "((*(*)&*)&)*&&)(*()*&)*)(*)"
+    if validateBrackets(expr) {
+    	t.Errorf("Test failed, expected false: %s", expr)
+	}
+    expr = "()(*)"
+    if !validateBrackets(expr) {
+    	t.Errorf("Test failed, expected true: %s", expr)
+	}
+
+    expr = "2321()()()(2(2()2)2)(2()2)"
+    if !validateBrackets(expr) {
+    	t.Errorf("Test failed, expected true: %s", expr)
+	}
+
+}
+
+func TestFail(t *testing.T) {
+    _, err := calc("1+2-34*&")
     if err == nil {
         t.Errorf("Test failed, expected error")
     }
