@@ -12,6 +12,17 @@ import (
 	strs "strings"
 )
 
+type Flags struct {
+	F bool
+	U bool
+	R bool
+	O string
+	N bool
+	K int
+}
+
+var flags Flags
+
 func readStringsFromFile(filename string) []string {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -118,17 +129,7 @@ func sortStrings(stringSlice *[]string, flags Flags) error {
 	return nil
 }
 
-type Flags struct {
-	F bool
-	U bool
-	R bool
-	O string
-	N bool
-	K int
-}
-
-func parseFlags() Flags {
-	var flags Flags
+func main() {
 	flag.BoolVar(&flags.F, "f", false, "Case insensitive")
 	flag.BoolVar(&flags.U, "u", false, "Remove duplicates")
 	flag.BoolVar(&flags.R, "r", false, "Reverse result")
@@ -136,11 +137,6 @@ func parseFlags() Flags {
 	flag.StringVar(&flags.O, "o", "", "Output filename")
 	flag.IntVar(&flags.K, "k", -1, "Sort by column")
 	flag.Parse()
-	return flags
-}
-
-func main() {
-	flags := parseFlags()
 	inputFilename := flag.Arg(0)
 
 	stringsFromFile := readStringsFromFile(inputFilename)
