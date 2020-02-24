@@ -13,15 +13,13 @@ import (
 )
 
 type Flags struct {
-	F bool
-	U bool
-	R bool
-	O string
-	N bool
-	K int
+	caseInsensitive bool
+	unique bool
+	reverse bool
+	numbers bool
+	column int
+	outputFile string
 }
-
-var flags Flags
 
 func readStringsFromFile(filename string) []string {
 	file, err := os.Open(filename)
@@ -88,11 +86,11 @@ func sortStrings(stringSlice *[]string, flags Flags) error {
 
 	processFlags := func(sign byte, i, j int) bool {
 		lString, rString := (*stringSlice)[i], (*stringSlice)[j]
-		if flags.K != -1 {
-			lString = getWordFromString(&lString, flags.K)
-			rString = getWordFromString(&rString, flags.K)
+		if flags.column != -1 {
+			lString = getWordFromString(&lString, flags.column)
+			rString = getWordFromString(&rString, flags.column)
 		}
-		if flags.N {
+		if flags.numbers {
 			lNumber, _ := conv.Atoi(lString)
 			rNumber, _ := conv.Atoi(rString)
 			if sign == '<' {
@@ -101,7 +99,7 @@ func sortStrings(stringSlice *[]string, flags Flags) error {
 				return lNumber == rNumber
 			}
 		}
-		if flags.F {
+		if flags.caseInsensitive {
 			lString, rString = strs.ToLower(lString), strs.ToLower(rString)
 		}
 		if sign == '<' {
@@ -113,13 +111,13 @@ func sortStrings(stringSlice *[]string, flags Flags) error {
 
 	sort.Slice(*stringSlice, func(i, j int) bool {
 		result := processFlags('<', i, j)
-		if flags.R {
+		if flags.reverse {
 			return !result
 		}
 		return result
 	})
 
-	if flags.U {
+	if flags.unique {
 		equal := func(i, j int) bool {
 			return processFlags('=', i, j)
 		}
@@ -130,12 +128,13 @@ func sortStrings(stringSlice *[]string, flags Flags) error {
 }
 
 func main() {
-	flag.BoolVar(&flags.F, "f", false, "Case insensitive")
-	flag.BoolVar(&flags.U, "u", false, "Remove duplicates")
-	flag.BoolVar(&flags.R, "r", false, "Reverse result")
-	flag.BoolVar(&flags.N, "n", false, "Sort as numbers")
-	flag.StringVar(&flags.O, "o", "", "Output filename")
-	flag.IntVar(&flags.K, "k", -1, "Sort by column")
+	var flags Flags
+	flag.BoolVar(&flags.caseInsensitive, "f", false, "Case insensitive")
+	flag.BoolVar(&flags.unique, "u", false, "Remove duplicates")
+	flag.BoolVar(&flags.reverse, "r", false, "Reverse result")
+	flag.BoolVar(&flags.numbers, "n", false, "Sort as numbers")
+	flag.StringVar(&flags.outputFile, "o", "", "Output filename")
+	flag.IntVar(&flags.column, "k", -1, "Sort by column")
 	flag.Parse()
 	inputFilename := flag.Arg(0)
 
@@ -149,8 +148,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if flags.O != "" {
-		outputFile, err := os.Create(flags.O)
+	if flags.outputFile != "" {
+		outputFile, err := os.Create(flags.outputFile)
 		if err != nil {
 			log.Fatal(err)
 		}
